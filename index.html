@@ -525,6 +525,222 @@
     #statsGrid, .issue, .tab-content {
       animation: fadeIn 0.3s ease-in-out;
     }
+
+    /* Bar Chart Styles */
+    .bar-chart {
+      width: 100%;
+      padding: 20px 0;
+    }
+
+    .chart-bars {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .chart-bar {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      position: relative;
+    }
+
+    .chart-bar::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: var(--bar-value, 0%);
+      background-color: var(--bar-color, #3b82f6);
+      opacity: 0.2;
+      border-radius: 4px;
+      z-index: 0;
+    }
+
+    .bar-label {
+      width: 80px;
+      font-weight: 500;
+      z-index: 1;
+    }
+
+    .bar-value {
+      margin-left: auto;
+      font-weight: 600;
+      color: var(--bar-color, #3b82f6);
+      z-index: 1;
+    }
+
+    /* Stacked Bar Chart */
+    .stacked-bar-chart {
+      width: 100%;
+      padding: 20px 0;
+    }
+
+    .stacked-bar-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .stacked-bar {
+      display: flex;
+      flex: 1;
+      height: 30px;
+      background-color: #f1f5f9;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+
+    .stacked-bar-segment {
+      height: 100%;
+      width: var(--segment-width, 0px);
+      min-width: var(--segment-width, 0px);
+      background-color: var(--segment-color, #3b82f6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .bar-label {
+      width: 150px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      padding-right: 15px;
+    }
+
+    .bar-total {
+      width: 80px;
+      padding-left: 15px;
+      font-weight: 500;
+    }
+
+    .chart-legend {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .legend-color {
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+    }
+
+    /* Utility for text truncation */
+    .text-truncate {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .json-tree-list {
+      margin: 0;
+      padding-left: 1.5rem;
+      list-style-type: none;
+    }
+
+    .json-tree-item {
+      margin: 0.25rem 0;
+    }
+
+    .json-node {
+      cursor: pointer;
+      padding: 0.1rem 0;
+    }
+
+    .json-toggle {
+      display: inline-block;
+      width: 1rem;
+      font-size: 0.7rem;
+      color: #666;
+    }
+
+    .json-key {
+      color: #0077cc;
+      font-weight: 500;
+    }
+
+    .json-value {
+      color: #116329;
+    }
+
+    .json-preview {
+      color: #666;
+      font-style: italic;
+      margin-left: 0.5rem;
+    }
+
+    .json-node.highlight {
+      background-color: #ffeb3b50;
+      font-weight: bold;
+    }
+
+    .highlighted-issue {
+      border-left: 4px solid var(--primary);
+      background-color: rgba(59, 130, 246, 0.05);
+    }
+
+    #orderDataViewer {
+      margin-top: 1rem;
+    }
+
+    #orderSummary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    #orderSummary .stat-card {
+      background-color: #f8fafc;
+      border-radius: 0.375rem;
+      flex: 1;
+      min-width: 120px;
+      padding: 1rem;
+    }
+
+    #orderInfoPanels {
+      margin-bottom: 1.5rem;
+    }
+
+    .order-card {
+      background-color: white;
+      border-radius: 0.5rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge-success { background-color: rgba(16, 185, 129, 0.1); color: var(--success); }
+    .badge-warning { background-color: rgba(245, 158, 11, 0.1); color: var(--warning); }
+    .badge-error { background-color: rgba(239, 68, 68, 0.1); color: var(--error); }
+    .badge-info { background-color: rgba(14, 165, 233, 0.1); color: var(--info); }
+
+    .highlighted-issue {
+      border-left: 4px solid var(--primary);
+      background-color: rgba(59, 130, 246, 0.05);
+    }
   </style>
 </head>
 <body>
@@ -748,24 +964,30 @@
     // Show loader
     loaderOverlay.style.display = 'flex';
 
-    // Reset validation results
-    validationResults.orders = [];
-    validationResults.issues = [];
-    validationResults.recommendations = [];
-
     try {
-      // Read files and process them
+      // Reset validation results
+      validationResults.orders = [];
+      validationResults.issues = [];
+      validationResults.recommendations = [];
+
+      // Process files
       await processFiles();
 
-      // Simulate processing time for demo purposes
+      // Simulate processing time for demo
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       // Update UI with results
       updateResults();
 
+      // Add the order viewer tab and functionality
+      addOrderViewer();
+
       // Hide loader and show results
       loaderOverlay.style.display = 'none';
       resultsSection.classList.remove('hidden');
+
+      // Initialize tabs
+      initializeTabs();
     } catch (error) {
       console.error('Validation error:', error);
       loaderOverlay.style.display = 'none';
@@ -3689,58 +3911,6 @@ ${validationResults.recommendations
     document.head.appendChild(styleElement);
   }
 
-  // Integration code for the enhanced Order API Validator
-
-  // Initialize the enhanced validator
-  function initEnhancedValidator() {
-    // Add enhanced validators to the global scope
-    window.validateOrder = validateOrder;
-    window.checkBasicStructure = checkBasicStructure;
-    window.checkCustomerData = checkCustomerData;
-    window.checkAddressFormat = checkAddressFormat;
-    window.checkAmountCalculations = checkAmountCalculations;
-    window.checkProductData = checkProductData;
-    window.checkRetailerData = checkRetailerData;
-    window.checkFulfillmentData = checkFulfillmentData;
-    window.checkMetadataAndOptions = checkMetadataAndOptions;
-    window.checkCrossFieldDependencies = checkCrossFieldDependencies;
-    window.generateRecommendations = generateRecommendations;
-
-    // Add UI enhancers to the global scope
-    window.updateStats = updateStats;
-    window.updateIssuesList = updateIssuesList;
-    window.updateRecommendationsList = updateRecommendationsList;
-    window.initializeExports = initializeExports;
-    window.addVisualizationTabs = addVisualizationTabs;
-    window.renderVisualizations = renderVisualizations;
-    window.addChartStyles = addChartStyles;
-
-    // Add chart styles
-    addChartStyles();
-
-    // Modify the original validate button click handler
-    const originalValidateBtn = document.getElementById('validateBtn');
-    const originalHandler = originalValidateBtn.onclick;
-
-    originalValidateBtn.onclick = async function() {
-      // Call the original handler
-      await originalHandler.call(this);
-
-      // After validation completes, add our enhanced features
-      enhanceValidationResults();
-    };
-
-    // Add settings button to the header
-    const header = document.querySelector('header');
-    const settingsBtn = document.createElement('button');
-    settingsBtn.className = 'btn btn-secondary mt-2';
-    settingsBtn.innerHTML = '<i class="fas fa-cog"></i> Validation Settings';
-    settingsBtn.onclick = showValidationSettings;
-    header.appendChild(settingsBtn);
-
-    console.log('Enhanced Order API Validator initialized');
-  }
-
   // Enhance the validation results display
   function enhanceValidationResults() {
     // Add visualization tab
@@ -4051,14 +4221,533 @@ ${validationResults.recommendations
     console.log('Demo data loaded');
   }
 
-  // Initialize the app
-  function init() {
-    // Set up event listeners and initial state
-    updateFileList();
+  // Render order data
+  // Add this function to your code
+  function addOrderViewer() {
+    // Add new tab to the tab list
+    const tabsContainer = document.querySelector('.tabs');
+    if (!tabsContainer) {
+      console.error("Tab container not found");
+      return;
+    }
+
+    // Check if we already have the Orders tab
+    let ordersTabButton = document.querySelector('[data-tab="ordersTab"]');
+    if (!ordersTabButton) {
+      ordersTabButton = document.createElement('div');
+      ordersTabButton.className = 'tab';
+      ordersTabButton.setAttribute('data-tab', 'ordersTab');
+      ordersTabButton.textContent = 'Orders';
+      tabsContainer.appendChild(ordersTabButton);
+    }
+
+    // Create orders tab content if it doesn't exist
+    let ordersTabContent = document.getElementById('ordersTab');
+    if (!ordersTabContent) {
+      ordersTabContent = document.createElement('div');
+      ordersTabContent.id = 'ordersTab';
+      ordersTabContent.className = 'tab-content';
+
+      // Get unique orders to avoid duplicates
+      const uniqueOrders = [];
+      const orderMap = new Map();
+
+      validationResults.orders.forEach(order => {
+        if (!orderMap.has(order.orderNumber)) {
+          orderMap.set(order.orderNumber, order);
+          uniqueOrders.push(order);
+        }
+      });
+
+      // Create the structure for order viewer
+      ordersTabContent.innerHTML = `
+        <div class="card mb-4">
+          <h3 class="text-xl font-medium mb-4">Order Details</h3>
+          <div class="order-selector mb-4">
+            <label for="orderSelector" class="block text-sm font-medium mb-2">Select an order to view</label>
+            <select id="orderSelector" class="w-full p-2 border rounded bg-white">
+              <option value="">Choose an order...</option>
+              ${uniqueOrders.map(order =>
+              `<option value="${order.orderNumber}">${order.orderNumber} (${order.fileName})</option>`
+      ).join('')}
+            </select>
+          </div>
+          <div id="orderDataViewer">
+            <div id="orderSummary" class="mb-4"></div>
+            <div id="orderInfoPanels" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4"></div>
+            <div id="orderDetailsContainer"></div>
+          </div>
+        </div>
+      `;
+
+      // Insert into results section
+      const resultsSection = document.getElementById('resultsSection');
+      if (resultsSection) {
+        resultsSection.appendChild(ordersTabContent);
+      } else {
+        console.error("Results section not found");
+        return;
+      }
+
+      // Add event listener for order selection
+      const orderSelector = document.getElementById('orderSelector');
+      if (orderSelector) {
+        orderSelector.addEventListener('change', function() {
+          const selectedOrderNumber = this.value;
+          if (selectedOrderNumber) {
+            renderModernOrderData(selectedOrderNumber);
+          } else {
+            hideOrderViewer();
+          }
+        });
+      }
+
+      // Initialize tab event listeners
+      if (ordersTabButton) {
+        ordersTabButton.addEventListener('click', function() {
+          document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+          document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+          this.classList.add('active');
+          ordersTabContent.classList.add('active');
+        });
+      }
+    }
+
+    // Add styles for order viewer
+    addOrderViewerStyles();
   }
 
-  // Start the app
-  init();
+  // Hide order viewer when no order is selected
+  function hideOrderViewer() {
+    const dataViewer = document.getElementById('orderDataViewer');
+    if (dataViewer) {
+      // Clear content instead of hiding
+      const summarySection = document.getElementById('orderSummary');
+      const infoPanels = document.getElementById('orderInfoPanels');
+      const detailsContainer = document.getElementById('orderDetailsContainer');
+
+      if (summarySection) summarySection.innerHTML = '';
+      if (infoPanels) infoPanels.innerHTML = '';
+      if (detailsContainer) detailsContainer.innerHTML = '';
+    }
+  }
+
+  // Render order data in a modern UI format
+  function renderModernOrderData(orderNumber) {
+    const order = validationResults.orders.find(o => o.orderNumber === orderNumber);
+    if (!order) {
+      console.error("Order not found:", orderNumber);
+      return;
+    }
+
+    const summarySection = document.getElementById('orderSummary');
+    const infoPanels = document.getElementById('orderInfoPanels');
+    const detailsContainer = document.getElementById('orderDetailsContainer');
+
+    if (!summarySection || !infoPanels || !detailsContainer) {
+      console.error("Order viewer containers not found");
+      return;
+    }
+
+    // Extract data from the order
+    const data = order.data;
+    if (!data) {
+      console.error("No data in order:", orderNumber);
+      return;
+    }
+
+    // Format date properly
+    const orderDate = data.createdAt ?
+            new Date(data.createdAt).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'short',
+              day: 'numeric'
+            }) : 'Unknown';
+
+    const orderStatus = getOrderStatus(data);
+
+    // Format total properly
+    const orderTotal = data.amounts?.total ?
+            `$${(parseFloat(data.amounts.total) / 100).toFixed(2)}` : 'Unknown';
+
+    const itemCount = data.items?.length || 0;
+
+    // Populate order summary
+    summarySection.innerHTML = `
+      <div class="stat-card p-3 flex-grow">
+        <span class="text-sm text-gray">Order Number</span>
+        <div class="text-lg font-bold">${order.orderNumber}</div>
+      </div>
+      <div class="stat-card p-3 flex-grow">
+        <span class="text-sm text-gray">Date</span>
+        <div class="text-lg">${orderDate}</div>
+      </div>
+      <div class="stat-card p-3 flex-grow">
+        <span class="text-sm text-gray">Total</span>
+        <div class="text-lg font-bold">${orderTotal}</div>
+      </div>
+      <div class="stat-card p-3 flex-grow">
+        <span class="text-sm text-gray">Status</span>
+        <div class="text-lg">
+          <span class="badge badge-${getStatusColor(orderStatus)}">${orderStatus}</span>
+        </div>
+      </div>
+      <div class="stat-card p-3 flex-grow">
+        <span class="text-sm text-gray">Items</span>
+        <div class="text-lg">${itemCount}</div>
+      </div>
+    `;
+
+    // Populate info panels
+    infoPanels.innerHTML = '';
+
+    // Customer info panel
+    if (data.customer) {
+      const customer = data.customer;
+      infoPanels.innerHTML += `
+        <div class="card p-4">
+          <h4 class="text-lg font-medium mb-2">
+            <i class="fas fa-user text-primary mr-2"></i> Customer
+          </h4>
+          <div class="text-sm">
+            <div class="mb-1"><strong>Name:</strong> ${customer.firstName || ''} ${customer.lastName || ''}</div>
+            <div class="mb-1"><strong>Email:</strong> ${customer.email || 'Not provided'}</div>
+            <div class="mb-1"><strong>Phone:</strong> ${customer.phone || data.addresses?.billing?.phone || 'Not provided'}</div>
+            ${customer.birthdate ? `<div><strong>DOB:</strong> ${customer.birthdate}</div>` : ''}
+          </div>
+        </div>
+      `;
+    }
+
+    // Shipping info panel
+    if (data.addresses?.shipping) {
+      const shipping = data.addresses.shipping;
+      infoPanels.innerHTML += `
+        <div class="card p-4">
+          <h4 class="text-lg font-medium mb-2">
+            <i class="fas fa-shipping-fast text-primary mr-2"></i> Shipping
+          </h4>
+          <div class="text-sm">
+            <div class="mb-1">${shipping.one || ''}</div>
+            ${shipping.two ? `<div class="mb-1">${shipping.two}</div>` : ''}
+            <div class="mb-1">${shipping.city || ''}, ${shipping.state || ''} ${shipping.zip || ''}</div>
+            <div>${shipping.country || ''}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Financial info panel
+    if (data.amounts) {
+      const amounts = data.amounts;
+      infoPanels.innerHTML += `
+        <div class="card p-4">
+          <h4 class="text-lg font-medium mb-2">
+            <i class="fas fa-money-bill-wave text-primary mr-2"></i> Amounts
+          </h4>
+          <table class="w-full text-sm">
+            <tr>
+              <td>Subtotal:</td>
+              <td class="text-right">${formatCentsToDollars(amounts.subtotal)}</td>
+            </tr>
+            <tr>
+              <td>Shipping:</td>
+              <td class="text-right">${formatCentsToDollars(amounts.shipping)}</td>
+            </tr>
+            <tr>
+              <td>Tax:</td>
+              <td class="text-right">${formatCentsToDollars(amounts.tax)}</td>
+            </tr>
+            ${parseFloat(amounts.discounts || 0) > 0 ? `
+            <tr>
+              <td>Discounts:</td>
+              <td class="text-right">-${formatCentsToDollars(amounts.discounts)}</td>
+            </tr>` : ''}
+            ${parseFloat(amounts.platform || 0) > 0 ? `
+            <tr>
+              <td>Platform Fee:</td>
+              <td class="text-right">${formatCentsToDollars(amounts.platform)}</td>
+            </tr>` : ''}
+            <tr class="font-bold border-t border-gray">
+              <td>Total:</td>
+              <td class="text-right">${formatCentsToDollars(amounts.total)}</td>
+            </tr>
+          </table>
+        </div>
+      `;
+    }
+
+    // Fulfillment info panel
+    const fulfillments = getOrderFulfillments(data);
+    if (fulfillments.length > 0) {
+      infoPanels.innerHTML += `
+        <div class="card p-4">
+          <h4 class="text-lg font-medium mb-2">
+            <i class="fas fa-box text-primary mr-2"></i> Fulfillment
+          </h4>
+          <div class="text-sm">
+            ${fulfillments.map(f => `
+              <div class="mb-2">
+                <div><strong>Type:</strong> ${f.type || 'Unknown'}</div>
+                <div><strong>Status:</strong> <span class="badge badge-${getFulfillmentStatusColor(f.status)}">${f.status || 'Unknown'}</span></div>
+                ${f.packages && f.packages.length ? `
+                  <div class="mt-1">
+                    <strong>Tracking:</strong> ${f.packages[0].trackingNumber || 'Not available'}
+                    ${f.packages[0].carrier ? `(${f.packages[0].carrier})` : ''}
+                  </div>
+                ` : ''}
+              </div>
+            `).join('<hr class="my-2">')}
+          </div>
+        </div>
+      `;
+    }
+
+    // Items list
+    if (data.items && data.items.length > 0) {
+      detailsContainer.innerHTML = `
+        <h4 class="text-lg font-medium mb-3">Order Items</h4>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-gray-50 text-left">
+                <th class="p-2">Product</th>
+                <th class="p-2">Price</th>
+                <th class="p-2">Qty</th>
+                <th class="p-2 text-right">Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${data.items.map((item, index) => `
+                <tr class="${index % 2 === 0 ? '' : 'bg-gray-50'}">
+                  <td class="p-2">
+                    <div class="font-medium">${item.product?.name || 'Unknown Product'}</div>
+                    <div class="text-xs text-gray">${item.product?.size || ''}</div>
+                    ${item.customerPlacement ? `<div class="text-xs text-primary">Type: ${capitalizeFirstLetter(item.customerPlacement)}</div>` : ''}
+                  </td>
+                  <td class="p-2">${formatCentsToDollars(item.pricing?.unitPrice)}</td>
+                  <td class="p-2">${item.pricing?.quantity || 1}</td>
+                  <td class="p-2 text-right">${formatCentsToDollars(item.pricing?.price)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        </div>
+      `;
+    } else {
+      detailsContainer.innerHTML = '<p class="text-sm text-gray">No items in this order</p>';
+    }
+
+    // Highlight issues related to this order
+    highlightRelevantIssues(orderNumber);
+  }
+
+  // Helper function to get the order status
+  function getOrderStatus(data) {
+    if (!data) return 'Unknown';
+
+    // Try to determine status from fulfillments
+    if (data.retailers && Array.isArray(data.retailers)) {
+      const fulfillments = data.retailers.flatMap(r => r.fulfillments || []);
+      if (fulfillments.length > 0) {
+        const statuses = fulfillments.map(f => f.status);
+        if (statuses.includes('delivered')) return 'Delivered';
+        if (statuses.includes('shipped')) return 'Shipped';
+        if (statuses.includes('processing')) return 'Processing';
+        if (statuses.includes('pending')) return 'Pending';
+        return statuses[0] || 'Pending';
+      }
+    }
+
+    // Fallback
+    return 'Pending';
+  }
+
+  // Helper function to format cents to dollars
+  function formatCentsToDollars(cents) {
+    if (cents === undefined || cents === null) return '$0.00';
+    return `$${(parseFloat(cents) / 100).toFixed(2)}`;
+  }
+
+  // Helper function to capitalize first letter
+  function capitalizeFirstLetter(string) {
+    if (!string) return '';
+    return string.charAt(0).toUpperCase() + string.slice(1).replace('_', ' ');
+  }
+
+  // Helper functions
+  function formatAmount(amount) {
+    if (amount === undefined || amount === null) return '$0.00';
+    return `$${parseFloat(amount).toFixed(2)}`;
+  }
+
+  ////
+  function getOrderStatus(data) {
+    if (!data) return 'Unknown';
+
+    // Try to determine status from fulfillments
+    if (data.retailers && Array.isArray(data.retailers)) {
+      const fulfillments = data.retailers.flatMap(r => r.fulfillments || []);
+      if (fulfillments.length > 0) {
+        const statuses = fulfillments.map(f => f.status);
+        if (statuses.includes('delivered')) return 'Delivered';
+        if (statuses.includes('shipped')) return 'Shipped';
+        if (statuses.includes('processing')) return 'Processing';
+        if (statuses.includes('pending')) return 'Pending';
+        return statuses[0] || 'Pending';
+      }
+    }
+
+    // Fallback
+    return 'Pending';
+  }
+
+  function getStatusColor(status) {
+    switch (status.toLowerCase()) {
+      case 'delivered': return 'success';
+      case 'shipped': return 'info';
+      case 'processing': return 'warning';
+      case 'pending': return 'warning';
+      case 'cancelled': return 'error';
+      default: return 'info';
+    }
+  }
+
+  function getFulfillmentStatusColor(status) {
+    return getStatusColor(status);
+  }
+
+  function getOrderFulfillments(data) {
+    if (!data || !data.retailers) return [];
+
+    let fulfillments = [];
+    data.retailers.forEach(retailer => {
+      if (retailer.fulfillments && Array.isArray(retailer.fulfillments)) {
+        fulfillments = fulfillments.concat(retailer.fulfillments);
+      }
+    });
+
+    return fulfillments;
+  }
+
+  // Update styles for the modern UI
+  function addOrderViewerStyles() {
+    // Check if styles are already added
+    if (document.getElementById('orderViewerStyles')) {
+      return;
+    }
+
+    const styleEl = document.createElement('style');
+    styleEl.id = 'orderViewerStyles';
+    styleEl.textContent = `
+    #orderDataViewer {
+      margin-top: 1rem;
+    }
+
+    #orderSummary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    #orderSummary .stat-card {
+      background-color: #f8fafc;
+      border-radius: 0.375rem;
+      flex: 1;
+      min-width: 120px;
+      padding: 1rem;
+    }
+
+    #orderInfoPanels {
+      margin-bottom: 1.5rem;
+    }
+
+    .order-card {
+      background-color: white;
+      border-radius: 0.5rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .table-container {
+      overflow-x: auto;
+      margin-bottom: 1.5rem;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    table td, table th {
+      padding: 0.5rem;
+      text-align: left;
+    }
+
+    table tr.bg-gray-50 {
+      background-color: #f8fafc;
+    }
+
+    .highlighted-issue {
+      border-left: 4px solid var(--primary);
+      background-color: rgba(59, 130, 246, 0.05);
+    }
+    `;
+    document.head.appendChild(styleEl);
+  }
+
+  // Fix the integration with enhanceValidationResults
+  // Move this to the top of your script, just after the variable declarations
+  function setupOrderViewerIntegration() {
+    // Store the original function reference if it exists
+    if (typeof window.enhanceValidationResults === 'function') {
+      const originalEnhanceValidationResults = window.enhanceValidationResults;
+
+      // Override the function
+      window.enhanceValidationResults = function() {
+        // Call the original function
+        originalEnhanceValidationResults.call(this);
+
+        // Add order viewer
+        console.log("Adding order viewer after enhanceValidationResults");
+        addOrderViewer();
+      };
+      console.log("enhanceValidationResults function hooked");
+    } else {
+      console.log("enhanceValidationResults not available yet, will try later");
+      // Function doesn't exist yet, set up a MutationObserver to catch when results appear
+      const observer = new MutationObserver(function(mutations) {
+        if (document.getElementById('resultsSection') && !document.getElementById('resultsSection').classList.contains('hidden')) {
+          console.log("Results detected, adding order viewer");
+          addOrderViewer();
+          observer.disconnect();
+        }
+      });
+
+      observer.observe(document.body, { childList: true, subtree: true });
+    }
+  }
+
+  // Highlight issues related to the current order
+  function highlightRelevantIssues(orderNumber) {
+    // Reset all issues
+    document.querySelectorAll('#issuesTab .issue').forEach(issue => {
+      issue.classList.remove('highlighted-issue');
+    });
+
+    if (!orderNumber) return;
+
+    // Highlight issues for this order
+    document.querySelectorAll('#issuesTab .issue').forEach(issue => {
+      const textContent = issue.querySelector('.text-sm')?.textContent;
+      if (textContent && textContent.includes(`Order: ${orderNumber}`)) {
+        issue.classList.add('highlighted-issue');
+      }
+    });
+  }
 </script>
 
 </body>
