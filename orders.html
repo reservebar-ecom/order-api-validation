@@ -1,0 +1,1298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order API Validator</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #3b82f6;
+      --primary-dark: #2563eb;
+      --warning: #f59e0b;
+      --error: #ef4444;
+      --success: #10b981;
+      --info: #0ea5e9;
+      --gray: #e2e8f0;
+    }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    body {
+      background-color: #f8fafc;
+      color: #1e293b;
+      line-height: 1.5;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .mb-4 { margin-bottom: 1rem; }
+    .mb-6 { margin-bottom: 1.5rem; }
+    .hidden { display: none; }
+    .flex { display: flex; }
+    .items-center { align-items: center; }
+    .justify-between { justify-content: space-between; }
+    .flex-col { flex-direction: column; }
+    .gap-2 { gap: 0.5rem; }
+    .gap-4 { gap: 1rem; }
+    .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+    .px-4 { padding-left: 1rem; padding-right: 1rem; }
+    .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+    .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+    .py-6 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+    .card {
+      background: white;
+      border-radius: 0.5rem;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .text-center { text-align: center; }
+    .text-sm { font-size: 0.875rem; }
+    .text-lg { font-size: 1.125rem; }
+    .text-xl { font-size: 1.25rem; }
+    .text-2xl { font-size: 1.5rem; }
+    .font-bold { font-weight: 700; }
+    .font-medium { font-weight: 500; }
+    .text-gray { color: #64748b; }
+    .text-primary { color: var(--primary); }
+    .border { border: 1px solid var(--gray); }
+    .border-dashed { border-style: dashed; }
+    .rounded { border-radius: 0.25rem; }
+    .rounded-full { border-radius: 9999px; }
+
+    /* Button Styles */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+    }
+    .btn-primary {
+      background-color: var(--primary);
+      color: white;
+    }
+    .btn-primary:hover { background-color: var(--primary-dark); }
+    .btn-primary:disabled {
+      background-color: #94a3b8;
+      cursor: not-allowed;
+    }
+    .btn-secondary {
+      background-color: white;
+      color: #64748b;
+      border: 1px solid #e2e8f0;
+    }
+    .btn-secondary:hover {
+      background-color: #f1f5f9;
+      color: #1e293b;
+    }
+
+    /* Upload Area */
+    .upload-area {
+      border: 2px dashed var(--gray);
+      border-radius: 0.5rem;
+      padding: 2rem;
+      text-align: center;
+      transition: all 0.3s;
+      cursor: pointer;
+    }
+    .upload-area:hover, .upload-area.dragover {
+      border-color: var(--primary);
+      background-color: #f0f9ff;
+    }
+
+    /* Status Badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .badge-error {
+      background-color: rgba(239, 68, 68, 0.1);
+      color: var(--error);
+    }
+    .badge-warning {
+      background-color: rgba(245, 158, 11, 0.1);
+      color: var(--warning);
+    }
+    .badge-info {
+      background-color: rgba(14, 165, 233, 0.1);
+      color: var(--info);
+    }
+    .badge-success {
+      background-color: rgba(16, 185, 129, 0.1);
+      color: var(--success);
+    }
+
+    /* Tabs */
+    .tabs {
+      display: flex;
+      border-bottom: 1px solid var(--gray);
+      margin-bottom: 1rem;
+    }
+    .tab {
+      padding: 0.75rem 1rem;
+      cursor: pointer;
+      font-weight: 500;
+      border-bottom: 2px solid transparent;
+      color: #64748b;
+    }
+    .tab.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+    }
+    .tab-content {
+      display: none;
+    }
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Issue Card */
+    .issue {
+      border-left: 3px solid transparent;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      background-color: #f8fafc;
+      border-radius: 0.25rem;
+    }
+    .issue-error { border-left-color: var(--error); }
+    .issue-warning { border-left-color: var(--warning); }
+    .issue-info { border-left-color: var(--info); }
+
+    /* Code Snippet */
+    .code {
+      font-family: monospace;
+      background-color: #f1f5f9;
+      padding: 0.5rem;
+      border-radius: 0.25rem;
+      overflow-x: auto;
+      font-size: 0.875rem;
+    }
+
+    /* File Item */
+    .file-item {
+      display: flex;
+      align-items: center;
+      padding: 0.75rem;
+      border: 1px solid var(--gray);
+      border-radius: 0.375rem;
+      margin-bottom: 0.75rem;
+    }
+
+    /* Loader */
+    .loader-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(255,255,255,0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+      backdrop-filter: blur(3px);
+    }
+    .loader-content {
+      text-align: center;
+      padding: 2rem;
+      background: white;
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(59, 130, 246, 0.3);
+      border-radius: 50%;
+      border-top-color: var(--primary);
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Stat Cards */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+    .stat-card {
+      background: white;
+      border-radius: 0.5rem;
+      padding: 1rem;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    /* Solution Box */
+    .solution {
+      background-color: rgba(16, 185, 129, 0.05);
+      border-left: 3px solid var(--success);
+      padding: 1rem;
+      margin-top: 0.5rem;
+      border-radius: 0 0.25rem 0.25rem 0;
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+      .tabs {
+        flex-wrap: wrap;
+      }
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+      .issue-header {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header class="text-center mb-6">
+    <h1 class="text-2xl font-bold mb-4">Order API Validator</h1>
+    <p class="text-gray">Analyze your Order API responses for inconsistencies and potential issues</p>
+  </header>
+
+  <div class="card mb-6">
+    <div class="upload-area" id="uploadArea">
+      <i class="fas fa-cloud-upload-alt text-primary" style="font-size: 3rem; margin-bottom: 1rem;"></i>
+      <h3 class="mb-2">Drop JSON files here or click to upload</h3>
+      <p class="text-sm text-gray">Upload up to 5 order JSON files for validation</p>
+      <input type="file" id="fileInput" multiple accept=".json" style="display: none;">
+      <p class="text-sm mt-4" id="fileCount">0 files selected</p>
+    </div>
+  </div>
+
+  <div id="fileList" class="mb-6 hidden"></div>
+
+  <div class="flex gap-4 mb-6">
+    <button id="validateBtn" class="btn btn-primary" disabled>
+      <i class="fas fa-check-circle"></i> Validate Orders
+    </button>
+    <button id="clearBtn" class="btn btn-secondary">
+      <i class="fas fa-trash"></i> Clear All
+    </button>
+  </div>
+
+  <div id="resultsSection" class="hidden">
+    <div class="stats-grid" id="statsGrid"></div>
+
+    <div class="tabs">
+      <div class="tab active" data-tab="issuesTab">Issues</div>
+      <div class="tab" data-tab="recommendationsTab">Recommendations</div>
+      <div class="tab" data-tab="exportTab">Export Report</div>
+    </div>
+
+    <div class="tab-content active" id="issuesTab">
+      <div id="issuesList"></div>
+    </div>
+
+    <div class="tab-content" id="recommendationsTab">
+      <div id="recommendationsList"></div>
+    </div>
+
+    <div class="tab-content" id="exportTab">
+      <div class="card">
+        <h3 class="text-xl font-medium mb-4">Export Validation Report</h3>
+        <p class="mb-4">Generate a detailed report of all validation issues and recommendations</p>
+        <div class="flex gap-4">
+          <button id="exportJsonBtn" class="btn btn-primary">
+            <i class="fas fa-file-code"></i> Export as JSON
+          </button>
+          <button id="exportCsvBtn" class="btn btn-secondary">
+            <i class="fas fa-file-csv"></i> Export as CSV
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="loader-overlay" id="loaderOverlay">
+    <div class="loader-content">
+      <div class="spinner"></div>
+      <p id="loaderMessage">Analyzing order data...</p>
+      <p class="text-sm text-gray" id="loaderDetail">Checking for inconsistencies...</p>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Global variables
+  const files = [];
+  const validationResults = {
+    orders: [],
+    issues: [],
+    recommendations: []
+  };
+
+  // DOM elements
+  const uploadArea = document.getElementById('uploadArea');
+  const fileInput = document.getElementById('fileInput');
+  const fileCount = document.getElementById('fileCount');
+  const fileList = document.getElementById('fileList');
+  const validateBtn = document.getElementById('validateBtn');
+  const clearBtn = document.getElementById('clearBtn');
+  const loaderOverlay = document.getElementById('loaderOverlay');
+  const loaderMessage = document.getElementById('loaderMessage');
+  const loaderDetail = document.getElementById('loaderDetail');
+  const resultsSection = document.getElementById('resultsSection');
+  const statsGrid = document.getElementById('statsGrid');
+  const issuesList = document.getElementById('issuesList');
+  const recommendationsList = document.getElementById('recommendationsList');
+  const tabs = document.querySelectorAll('.tab');
+  const tabContents = document.querySelectorAll('.tab-content');
+  const exportJsonBtn = document.getElementById('exportJsonBtn');
+  const exportCsvBtn = document.getElementById('exportCsvBtn');
+
+  // Event listeners for file upload
+  uploadArea.addEventListener('click', () => fileInput.click());
+  uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadArea.classList.add('dragover');
+  });
+  uploadArea.addEventListener('dragleave', () => {
+    uploadArea.classList.remove('dragover');
+  });
+  uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove('dragover');
+    handleFiles(e.dataTransfer.files);
+  });
+  fileInput.addEventListener('change', (e) => {
+    handleFiles(e.target.files);
+  });
+
+  // Handle file uploads
+  // Handle file uploads
+  function handleFiles(fileList) {
+    if (files.length + fileList.length > 5) {
+      alert('You can upload a maximum of 5 files');
+      return;
+    }
+
+    for (const file of fileList) {
+      if (file.type === 'application/json' || file.name.endsWith('.json')) {
+        files.push(file);
+      }
+    }
+
+    updateFileList();
+  }
+
+  // Update the file list UI
+  function updateFileList() {
+    fileCount.textContent = `${files.length} file${files.length !== 1 ? 's' : ''} selected`;
+    fileList.innerHTML = '';
+
+    if (files.length > 0) {
+      fileList.classList.remove('hidden');
+
+      files.forEach((file, index) => {
+        const fileItem = document.createElement('div');
+        fileItem.className = 'file-item';
+        fileItem.innerHTML = `
+                <i class="fas fa-file-code text-primary" style="margin-right: 1rem;"></i>
+                <div class="flex-1">
+                    <div class="flex justify-between">
+                        <span class="font-medium">${file.name}</span>
+                        <span class="text-sm text-gray">${formatFileSize(file.size)}</span>
+                    </div>
+                </div>
+                <button class="file-action remove-file" data-index="${index}">
+                    <i class="fas fa-times"></i>
+                </button>
+            `;
+        fileList.appendChild(fileItem);
+      });
+
+      // Add event listeners for remove buttons
+      document.querySelectorAll('.remove-file').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const index = parseInt(e.currentTarget.getAttribute('data-index'));
+          files.splice(index, 1);
+          updateFileList();
+        });
+      });
+
+      validateBtn.disabled = false;
+    } else {
+      fileList.classList.add('hidden');
+      validateBtn.disabled = true;
+    }
+  }
+
+  // Format file size
+  function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
+  // Tab switching functionality
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      // Remove active class from all tabs and contents
+      tabs.forEach(t => t.classList.remove('active'));
+      tabContents.forEach(c => c.classList.remove('active'));
+
+      // Add active class to clicked tab and corresponding content
+      tab.classList.add('active');
+      const tabId = tab.getAttribute('data-tab');
+      document.getElementById(tabId).classList.add('active');
+    });
+  });
+
+  // Clear all files
+  clearBtn.addEventListener('click', () => {
+    files.length = 0;
+    updateFileList();
+    resultsSection.classList.add('hidden');
+  });
+
+  // Validate orders
+  validateBtn.addEventListener('click', async () => {
+    // Show loader
+    loaderOverlay.style.display = 'flex';
+
+    // Reset validation results
+    validationResults.orders = [];
+    validationResults.issues = [];
+    validationResults.recommendations = [];
+
+    try {
+      // Read files and process them
+      await processFiles();
+
+      // Simulate processing time for demo purposes
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Update UI with results
+      updateResults();
+
+      // Hide loader and show results
+      loaderOverlay.style.display = 'none';
+      resultsSection.classList.remove('hidden');
+    } catch (error) {
+      console.error('Validation error:', error);
+      loaderOverlay.style.display = 'none';
+      alert('Error processing files: ' + error.message);
+    }
+  });
+
+  // Process all files
+  async function processFiles() {
+    for (const file of files) {
+      loaderMessage.textContent = `Analyzing ${file.name}...`;
+      const orderData = await readFileAsJson(file);
+
+      if (orderData) {
+        // Add order to results
+        validationResults.orders.push({
+          fileName: file.name,
+          orderNumber: orderData.data?.legacyOrderNumber || 'Unknown',
+          data: orderData
+        });
+
+        // Validate order
+        validateOrder(orderData, file.name);
+      }
+    }
+
+    // Generate recommendations based on issues
+    generateRecommendations();
+  }
+
+  // Read file as JSON
+  function readFileAsJson(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+
+      reader.onload = (e) => {
+        try {
+          const json = JSON.parse(e.target.result);
+          resolve(json);
+        } catch (error) {
+          reject(new Error(`Invalid JSON in file ${file.name}`));
+        }
+      };
+
+      reader.onerror = () => {
+        reject(new Error(`Error reading file ${file.name}`));
+      };
+
+      reader.readAsText(file);
+    });
+  }
+
+  // Validate a single order
+  function validateOrder(orderData, fileName) {
+    const orderNumber = orderData.data?.legacyOrderNumber || 'Unknown';
+    loaderDetail.textContent = `Validating order ${orderNumber}...`;
+
+    // PERFORM VALIDATION CHECKS
+
+    // 1. Check for correct structure
+    if (!orderData.data) {
+      addIssue('error', 'Missing data field', 'The order response is missing the required data field', fileName, orderNumber, 'root.data');
+    }
+
+    if (orderData.data) {
+      // 2. Check ID formats consistency
+      checkIdConsistency(orderData.data, fileName, orderNumber);
+
+      // 3. Check address formats
+      checkAddressFormat(orderData.data, fileName, orderNumber);
+
+      // 4. Check amount calculations
+      checkAmountCalculations(orderData.data, fileName, orderNumber);
+
+      // 5. Check for null/empty required fields
+      checkRequiredFields(orderData.data, fileName, orderNumber);
+
+      // 6. Check for product data consistency
+      checkProductData(orderData.data, fileName, orderNumber);
+
+      // 7. Check customer data
+      checkCustomerData(orderData.data, fileName, orderNumber);
+    }
+  }
+
+  // Check ID formats consistency
+  function checkIdConsistency(data, fileName, orderNumber) {
+    const idPatterns = {};
+
+    // Check retailer IDs
+    if (data.retailers && Array.isArray(data.retailers)) {
+      data.retailers.forEach((retailer, index) => {
+        if (retailer.id) {
+          const idType = detectIdType(retailer.id);
+          idPatterns[`retailer_${index}`] = idType;
+
+          if (retailer.legacyId && detectIdType(retailer.legacyId) !== idType) {
+            addIssue(
+                    'warning',
+                    'Inconsistent ID format',
+                    `Retailer ${retailer.name} has inconsistent ID formats between id and legacyId`,
+                    fileName,
+                    orderNumber,
+                    `data.retailers[${index}]`
+            );
+          }
+        }
+      });
+    }
+
+    // Check item IDs
+    if (data.items && Array.isArray(data.items)) {
+      data.items.forEach((item, index) => {
+        if (item.id) {
+          const idType = detectIdType(item.id);
+          idPatterns[`item_${index}`] = idType;
+        }
+      });
+    }
+
+    // Check for mixed ID types
+    const idTypes = Object.values(idPatterns);
+    const uniqueIdTypes = [...new Set(idTypes)];
+
+    if (uniqueIdTypes.length > 1) {
+      addIssue(
+              'warning',
+              'Mixed ID format types',
+              `The order uses mixed ID format types: ${uniqueIdTypes.join(', ')}`,
+              fileName,
+              orderNumber,
+              'multiple'
+      );
+    }
+  }
+
+  // Detect ID type (numeric, ObjectId, etc)
+  function detectIdType(id) {
+    if (/^\d+$/.test(id)) {
+      return 'numeric';
+    } else if (/^[0-9a-f]{24}$/.test(id)) {
+      return 'ObjectId';
+    } else {
+      return 'other';
+    }
+  }
+
+  // Check address format consistency
+  function checkAddressFormat(data, fileName, orderNumber) {
+    if (data.addresses) {
+      // Check for country code consistency
+      const countries = [];
+
+      if (data.addresses.shipping && data.addresses.shipping.country) {
+        countries.push({
+          type: 'shipping',
+          country: data.addresses.shipping.country
+        });
+      }
+
+      if (data.addresses.billing && data.addresses.billing.country) {
+        countries.push({
+          type: 'billing',
+          country: data.addresses.billing.country
+        });
+      }
+
+      // Check if retailers have addresses
+      if (data.retailers && Array.isArray(data.retailers)) {
+        data.retailers.forEach((retailer, index) => {
+          if (retailer.address && retailer.address.country) {
+            countries.push({
+              type: `retailer_${index}`,
+              country: retailer.address.country
+            });
+          }
+        });
+      }
+
+      // Check country code consistency
+      const uniqueCountries = [...new Set(countries.map(c => c.country))];
+      if (uniqueCountries.length > 1) {
+        addIssue(
+                'warning',
+                'Inconsistent country formats',
+                `The order uses different country formats: ${uniqueCountries.join(', ')}`,
+                fileName,
+                orderNumber,
+                'data.addresses'
+        );
+      }
+
+      // Check billingSameAsShipping flag consistency
+      if (data.options && data.options.billingSameAsShipping === true) {
+        // Check if billing and shipping addresses actually match
+        const shipping = data.addresses.shipping;
+        const billing = data.addresses.billing;
+
+        if (shipping && billing) {
+          const addressFields = ['one', 'two', 'city', 'state', 'zip', 'country'];
+          const differences = addressFields.filter(field =>
+                  shipping[field] !== billing[field]
+          );
+
+          if (differences.length > 0) {
+            addIssue(
+                    'error',
+                    'Address flag inconsistency',
+                    `billingSameAsShipping is true but addresses differ in: ${differences.join(', ')}`,
+                    fileName,
+                    orderNumber,
+                    'data.options.billingSameAsShipping'
+            );
+          }
+        }
+      }
+    }
+  }
+
+  // Check amount calculations
+  function checkAmountCalculations(data, fileName, orderNumber) {
+    if (data.amounts) {
+      const amounts = data.amounts;
+
+      // Check total calculation
+      const calculatedTotal = (amounts.subtotal || 0) +
+              (amounts.shipping || 0) +
+              (amounts.platform || 0) +
+              (amounts.tax || 0) +
+              (amounts.engraving || 0) +
+              (amounts.service || 0) +
+              (amounts.delivery || 0) -
+              (amounts.discounts || 0) -
+              (amounts.giftCards || 0);
+
+      if (amounts.total !== undefined && Math.abs(calculatedTotal - amounts.total) > 1) {
+        addIssue(
+                'error',
+                'Total amount calculation error',
+                `Calculated total (${calculatedTotal}) doesn't match the provided total (${amounts.total})`,
+                fileName,
+                orderNumber,
+                'data.amounts.total'
+        );
+      }
+
+      // Check tax details sum
+      if (amounts.taxDetails) {
+        const taxSum = Object.values(amounts.taxDetails).reduce((sum, val) => sum + (val || 0), 0);
+
+        if (amounts.tax !== undefined && Math.abs(taxSum - amounts.tax) > 1) {
+          addIssue(
+                  'warning',
+                  'Tax details sum mismatch',
+                  `Sum of tax details (${taxSum}) doesn't match the total tax (${amounts.tax})`,
+                  fileName,
+                  orderNumber,
+                  'data.amounts.taxDetails'
+          );
+        }
+      }
+
+      // Check discount details sum
+      if (amounts.discountDetails) {
+        const discountSum = Object.values(amounts.discountDetails).reduce((sum, val) => sum + (val || 0), 0);
+
+        if (amounts.discounts !== undefined && Math.abs(discountSum - amounts.discounts) > 1) {
+          addIssue(
+                  'warning',
+                  'Discount details sum mismatch',
+                  `Sum of discount details (${discountSum}) doesn't match the total discounts (${amounts.discounts})`,
+                  fileName,
+                  orderNumber,
+                  'data.amounts.discountDetails'
+          );
+        }
+      }
+
+      // Check retailer amounts
+      if (data.retailers && Array.isArray(data.retailers)) {
+        let retailerSubtotalSum = 0;
+        let retailerTaxSum = 0;
+
+        data.retailers.forEach((retailer, index) => {
+          if (retailer.amounts) {
+            retailerSubtotalSum += retailer.amounts.subtotal || 0;
+            retailerTaxSum += retailer.amounts.tax || 0;
+          }
+        });
+
+        if (amounts.subtotal !== undefined && Math.abs(retailerSubtotalSum - amounts.subtotal) > 1) {
+          addIssue(
+                  'warning',
+                  'Retailer subtotal sum mismatch',
+                  `Sum of retailer subtotals (${retailerSubtotalSum}) doesn't match the order subtotal (${amounts.subtotal})`,
+                  fileName,
+                  orderNumber,
+                  'data.retailers[].amounts'
+          );
+        }
+
+        if (amounts.tax !== undefined && Math.abs(retailerTaxSum - amounts.tax) > 1) {
+          addIssue(
+                  'warning',
+                  'Retailer tax sum mismatch',
+                  `Sum of retailer taxes (${retailerTaxSum}) doesn't match the order tax (${amounts.tax})`,
+                  fileName,
+                  orderNumber,
+                  'data.retailers[].amounts'
+          );
+        }
+      }
+    }
+  }
+
+  // Check required fields
+  function checkRequiredFields(data, fileName, orderNumber) {
+    // Check customer info
+    if (data.customer) {
+      if (!data.customer.email) {
+        addIssue(
+                'error',
+                'Missing required field',
+                'Customer email is required',
+                fileName,
+                orderNumber,
+                'data.customer.email'
+        );
+      }
+
+      if (!data.customer.firstName || !data.customer.lastName) {
+        addIssue(
+                'error',
+                'Missing required field',
+                'Customer first name and last name are required',
+                fileName,
+                orderNumber,
+                'data.customer'
+        );
+      }
+
+// Check for age verification if not a gift card
+      const isGiftCard = data.items && data.items.some(item =>
+                      item.product && (
+                              item.product.name && item.product.name.toLowerCase().includes('gift card') ||
+                              item.product.category && item.product.category.toLowerCase().includes('gift card')
+                      )
+      );
+
+      if (!isGiftCard && data.options && data.options.hasVerifiedAge === false) {
+        addIssue(
+                'error',
+                'Age verification required',
+                'Orders with alcohol products require age verification',
+                fileName,
+                orderNumber,
+                'data.options.hasVerifiedAge'
+        );
+      }
+    }
+  }
+
+  // Check product data consistency
+  function checkProductData(data, fileName, orderNumber) {
+    if (data.items && Array.isArray(data.items)) {
+      data.items.forEach((item, index) => {
+        if (item.product) {
+          // Check for consistent size formatting
+          if (item.product.size) {
+            if (item.product.size === "NULL NULL") {
+              addIssue(
+                      'warning',
+                      'Invalid product size',
+                      `Item ${index + 1} has invalid size format: "NULL NULL"`,
+                      fileName,
+                      orderNumber,
+                      `data.items[${index}].product.size`
+              );
+            } else if (item.product.size && item.product.volume && !item.product.size.includes(item.product.volume)) {
+              addIssue(
+                      'warning',
+                      'Inconsistent size and volume',
+                      `Item ${index + 1} has size (${item.product.size}) that doesn't match volume (${item.product.volume})`,
+                      fileName,
+                      orderNumber,
+                      `data.items[${index}].product.size`
+              );
+            }
+          }
+
+          // Check for consistent pricing
+          if (item.pricing) {
+            const totalPrice = (item.pricing.unitPrice || 0) * (item.pricing.quantity || 1);
+            if (item.pricing.price !== undefined && Math.abs(totalPrice - item.pricing.price) > 1) {
+              addIssue(
+                      'error',
+                      'Price calculation error',
+                      `Item ${index + 1} price (${item.pricing.price}) doesn't match unitPrice × quantity (${totalPrice})`,
+                      fileName,
+                      orderNumber,
+                      `data.items[${index}].pricing`
+              );
+            }
+          }
+
+          // Check for missing UPC on non-gift card products
+          if (!isGiftCardProduct(item.product) && (!item.product.upc || item.product.upc === '')) {
+            addIssue(
+                    'warning',
+                    'Missing UPC',
+                    `Item ${index + 1} (${item.product.name}) is missing UPC code`,
+                    fileName,
+                    orderNumber,
+                    `data.items[${index}].product.upc`
+            );
+          }
+        }
+      });
+    }
+  }
+
+  // Check if product is a gift card
+  function isGiftCardProduct(product) {
+    return product && (
+            (product.name && product.name.toLowerCase().includes('gift card')) ||
+            (product.category && product.category.toLowerCase().includes('gift card'))
+    );
+  }
+
+  // Check customer data
+  function checkCustomerData(data, fileName, orderNumber) {
+    if (data.customer) {
+      // Check for typo in names across billing and customer
+      if (data.addresses && data.addresses.billing) {
+        const customer = data.customer;
+        const billing = data.addresses.billing;
+
+        if (billing.firstName && customer.firstName &&
+                billing.firstName !== customer.firstName &&
+                levenshteinDistance(billing.firstName, customer.firstName) <= 2) {
+          addIssue(
+                  'warning',
+                  'Possible typo in name',
+                  `Customer first name (${customer.firstName}) is slightly different from billing name (${billing.firstName})`,
+                  fileName,
+                  orderNumber,
+                  'data.addresses.billing.firstName'
+          );
+        }
+
+        if (billing.lastName && customer.lastName &&
+                billing.lastName !== customer.lastName &&
+                levenshteinDistance(billing.lastName, customer.lastName) <= 2) {
+          addIssue(
+                  'warning',
+                  'Possible typo in name',
+                  `Customer last name (${customer.lastName}) is slightly different from billing name (${billing.lastName})`,
+                  fileName,
+                  orderNumber,
+                  'data.addresses.billing.lastName'
+          );
+        }
+
+        // Check for email consistency
+        if (billing.email && customer.email && billing.email !== customer.email) {
+          addIssue(
+                  'warning',
+                  'Inconsistent email',
+                  `Customer email (${customer.email}) differs from billing email (${billing.email})`,
+                  fileName,
+                  orderNumber,
+                  'data.addresses.billing.email'
+          );
+        }
+      }
+    }
+  }
+
+  // Levenshtein distance for typo detection
+  function levenshteinDistance(a, b) {
+    if (a.length === 0) return b.length;
+    if (b.length === 0) return a.length;
+
+    const matrix = [];
+
+    // Initialize matrix
+    for (let i = 0; i <= b.length; i++) {
+      matrix[i] = [i];
+    }
+
+    for (let j = 0; j <= a.length; j++) {
+      matrix[0][j] = j;
+    }
+
+    // Calculate distance
+    for (let i = 1; i <= b.length; i++) {
+      for (let j = 1; j <= a.length; j++) {
+        const cost = a[j - 1] === b[i - 1] ? 0 : 1;
+        matrix[i][j] = Math.min(
+                matrix[i - 1][j] + 1,     // deletion
+                matrix[i][j - 1] + 1,     // insertion
+                matrix[i - 1][j - 1] + cost  // substitution
+        );
+      }
+    }
+
+    return matrix[b.length][a.length];
+  }
+
+  // Add an issue to the validation results
+  function addIssue(severity, title, description, fileName, orderNumber, path) {
+    validationResults.issues.push({
+      id: `issue-${validationResults.issues.length + 1}`,
+      severity,
+      title,
+      description,
+      fileName,
+      orderNumber,
+      path
+    });
+  }
+
+  // Generate recommendations based on issues
+  function generateRecommendations() {
+    // Count issues by type
+    const issueCount = {
+      error: 0,
+      warning: 0,
+      info: 0
+    };
+
+    validationResults.issues.forEach(issue => {
+      issueCount[issue.severity]++;
+    });
+
+    // Standard recommendations
+    validationResults.recommendations.push({
+      id: 'rec-1',
+      title: 'Standardize ID formats',
+      description: 'Use consistent ID formats across all entities in the API response. Choose either numeric IDs or ObjectIDs and apply consistently.',
+      priority: issueCount.warning > 0 ? 'high' : 'medium'
+    });
+
+    validationResults.recommendations.push({
+      id: 'rec-2',
+      title: 'Validate amount calculations',
+      description: 'Implement server-side validation to ensure total amounts are calculated correctly and match the sum of their components.',
+      priority: issueCount.error > 0 ? 'high' : 'medium'
+    });
+
+    validationResults.recommendations.push({
+      id: 'rec-3',
+      title: 'Normalize address formats',
+      description: 'Standardize country codes and address formats to ensure consistency across shipping, billing, and retailer addresses.',
+      priority: 'medium'
+    });
+
+    // Add recommendations based on specific issues
+    if (validationResults.issues.some(issue => issue.path?.includes('hasVerifiedAge'))) {
+      validationResults.recommendations.push({
+        id: 'rec-4',
+        title: 'Enforce age verification',
+        description: 'Implement stricter validation for age verification, especially for orders containing alcohol products.',
+        priority: 'high'
+      });
+    }
+
+    if (validationResults.issues.some(issue => issue.description?.includes('typo'))) {
+      validationResults.recommendations.push({
+        id: 'rec-5',
+        title: 'Improve name validation',
+        description: 'Add checks for possible typos in customer names between billing address and customer information.',
+        priority: 'medium'
+      });
+    }
+
+    if (validationResults.issues.some(issue => issue.path?.includes('product.upc'))) {
+      validationResults.recommendations.push({
+        id: 'rec-6',
+        title: 'Enforce UPC codes',
+        description: 'Make UPC codes mandatory for all non-gift card products to ensure consistent product identification.',
+        priority: 'medium'
+      });
+    }
+  }
+
+  // Update UI with validation results
+  function updateResults() {
+    // Update stats
+    updateStats();
+
+    // Update issues list
+    updateIssuesList();
+
+    // Update recommendations
+    updateRecommendationsList();
+  }
+
+  // Update stats section
+  function updateStats() {
+    const countBySeverity = {
+      error: validationResults.issues.filter(i => i.severity === 'error').length,
+      warning: validationResults.issues.filter(i => i.severity === 'warning').length,
+      info: validationResults.issues.filter(i => i.severity === 'info').length
+    };
+
+    statsGrid.innerHTML = `
+                <div class="stat-card">
+                    <div class="flex items-center gap-2">
+                        <div class="stat-icon stat-icon-error">
+                            <i class="fas fa-exclamation-circle"></i>
+                        </div>
+                        <div class="text-2xl font-bold">${countBySeverity.error}</div>
+                    </div>
+                    <div class="text-sm text-gray">Critical Issues</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="flex items-center gap-2">
+                        <div class="stat-icon stat-icon-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="text-2xl font-bold">${countBySeverity.warning}</div>
+                    </div>
+                    <div class="text-sm text-gray">Warnings</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="flex items-center gap-2">
+                        <div class="stat-icon stat-icon-info">
+                            <i class="fas fa-info-circle"></i>
+                        </div>
+                        <div class="text-2xl font-bold">${countBySeverity.info}</div>
+                    </div>
+                    <div class="text-sm text-gray">Suggestions</div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="flex items-center gap-2">
+                        <div class="stat-icon stat-icon-success">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <div class="text-2xl font-bold">${validationResults.orders.length}</div>
+                    </div>
+                    <div class="text-sm text-gray">Orders Analyzed</div>
+                </div>
+            `;
+  }
+
+  // Update issues list
+  function updateIssuesList() {
+    // Sort issues by severity (error, warning, info)
+    const sortedIssues = [...validationResults.issues].sort((a, b) => {
+      const severityOrder = { error: 0, warning: 1, info: 2 };
+      return severityOrder[a.severity] - severityOrder[b.severity];
+    });
+
+    if (sortedIssues.length === 0) {
+      issuesList.innerHTML = `
+                    <div class="card">
+                        <p class="text-center text-gray">No issues found! 🎉</p>
+                    </div>
+                `;
+      return;
+    }
+
+    issuesList.innerHTML = '';
+
+    sortedIssues.forEach(issue => {
+      const issueElement = document.createElement('div');
+      issueElement.className = `issue issue-${issue.severity}`;
+
+      issueElement.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <div>
+                            <h3 class="font-medium">${issue.title}</h3>
+                            <p class="text-sm text-gray">Order: ${issue.orderNumber} (${issue.fileName})</p>
+                        </div>
+                        <span class="badge badge-${issue.severity}">
+                            <i class="fas fa-${issue.severity === 'error' ? 'exclamation-circle' : (issue.severity === 'warning' ? 'exclamation-triangle' : 'info-circle')}"></i>
+                            ${issue.severity.toUpperCase()}
+                        </span>
+                    </div>
+
+                    <p class="mb-2">${issue.description}</p>
+
+                    <div class="code mb-2">${issue.path}</div>
+
+                    <div class="solution">
+                        <div class="font-medium text-success mb-2">
+                            <i class="fas fa-lightbulb"></i> Suggested Solution
+                        </div>
+                        <p>${getSuggestedSolution(issue)}</p>
+                    </div>
+                `;
+
+      issuesList.appendChild(issueElement);
+    });
+  }
+
+  // Get suggested solution based on issue type
+  function getSuggestedSolution(issue) {
+    // Generate solutions based on the issue type and path
+    if (issue.path?.includes('total')) {
+      return 'Verify the calculation logic for totals. Ensure all components (subtotal, tax, shipping, etc.) are correctly summed.';
+    } else if (issue.path?.includes('hasVerifiedAge')) {
+      return 'Implement age verification checks for all orders with alcohol products. Update the hasVerifiedAge flag accordingly.';
+    } else if (issue.path?.includes('product.upc')) {
+      return 'Add UPC code for this product. All non-gift card products should have a UPC code for proper inventory tracking.';
+    } else if (issue.description?.includes('typo')) {
+      return 'Check for possible typos in customer information between billing address and customer profile.';
+    } else if (issue.path?.includes('billingSameAsShipping')) {
+      return 'Ensure the billingSameAsShipping flag correctly reflects whether the billing and shipping addresses are identical.';
+    } else if (issue.title?.includes('ID format')) {
+      return 'Standardize ID formats across the system. Use either numeric IDs or ObjectIDs consistently.';
+    } else {
+      return 'Review the data and ensure it follows the expected format and validation rules.';
+    }
+  }
+
+  // Update recommendations list
+  function updateRecommendationsList() {
+    recommendationsList.innerHTML = '';
+
+    validationResults.recommendations.forEach(rec => {
+      const recElement = document.createElement('div');
+      recElement.className = 'card';
+
+      const priorityBadge = rec.priority === 'high'
+              ? '<span class="badge badge-error">High Priority</span>'
+              : (rec.priority === 'medium' ? '<span class="badge badge-warning">Medium Priority</span>' : '<span class="badge badge-info">Low Priority</span>');
+
+      recElement.innerHTML = `
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="text-lg font-medium">${rec.title}</h3>
+                ${priorityBadge}
+            </div>
+            <p>${rec.description}</p>
+        `;
+
+      recommendationsList.appendChild(recElement);
+    });
+  }
+
+  // Export functionality
+  exportJsonBtn.addEventListener('click', () => {
+    const data = JSON.stringify(validationResults, null, 2);
+    downloadFile('order-validation-report.json', data, 'application/json');
+  });
+
+  exportCsvBtn.addEventListener('click', () => {
+    // Create CSV for issues
+    const headers = ['Severity', 'Title', 'Description', 'Order Number', 'File Name', 'Path'];
+    const csvRows = [headers];
+
+    validationResults.issues.forEach(issue => {
+      csvRows.push([
+        issue.severity,
+        issue.title,
+        issue.description,
+        issue.orderNumber,
+        issue.fileName,
+        issue.path
+      ]);
+    });
+
+    const csvContent = csvRows.map(row =>
+            row.map(cell => `"${(cell || '').toString().replace(/"/g, '""')}"`).join(',')
+    ).join('\n');
+
+    downloadFile('order-validation-issues.csv', csvContent, 'text/csv');
+  });
+
+  // Helper function to download a file
+  function downloadFile(filename, content, contentType) {
+    const blob = new Blob([content], { type: contentType });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }
+
+  // Load demo data for testing
+  function loadDemoData() {
+    // Example files and data could be loaded here for testing purposes
+    console.log('Demo data loaded');
+  }
+
+  // Initialize the app
+  function init() {
+    // Set up event listeners and initial state
+    updateFileList();
+  }
+
+  // Start the app
+  init();
+</script>
