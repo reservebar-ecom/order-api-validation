@@ -1260,12 +1260,8 @@
       validationResults.issues = [];
       validationResults.recommendations = [];
 
-      // Process files - bypass the error by using an empty try/catch
-      try {
-        await processFiles();
-      } catch (fileError) {
-        console.log('Bypassing old file processing');
-      }
+      // Process files
+      await processFiles();
 
       // Simulate processing time for demo
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -1291,27 +1287,20 @@
 
   // Process all files
   async function processFiles() {
-    // Create a safe empty array if files is not defined
-    const safeFiles = typeof files !== 'undefined' ? files : [];
-    
-    for (const file of safeFiles) {
+    for (const file of files) {
       loaderMessage.textContent = `Analyzing ${file.name}...`;
-      try {
-        const orderData = await readFileAsJson(file);
+      const orderData = await readFileAsJson(file);
 
-        if (orderData) {
-          // Add order to results
-          validationResults.orders.push({
-            fileName: file.name,
-            orderNumber: orderData.data?.legacyOrderNumber || 'Unknown',
-            data: orderData
-          });
+      if (orderData) {
+        // Add order to results
+        validationResults.orders.push({
+          fileName: file.name,
+          orderNumber: orderData.data?.legacyOrderNumber || 'Unknown',
+          data: orderData
+        });
 
-          // Validate order
-          validateOrder(orderData, file.name);
-        }
-      } catch (error) {
-        console.log(`Skipping file processing: ${error.message}`);
+        // Validate order
+        validateOrder(orderData, file.name);
       }
     }
 
